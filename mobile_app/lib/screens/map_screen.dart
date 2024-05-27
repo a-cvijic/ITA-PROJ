@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../colors.dart';
 
 class MapScreen extends StatefulWidget {
   @override
@@ -8,32 +9,45 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   GoogleMapController? mapController;
-
   final LatLng _center = const LatLng(46.5547, 15.6459);
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedCategory = 'All';
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+  }
+
+  void _selectCategory(String category) {
+    setState(() {
+      _selectedCategory = category;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.whiteSmoke,
         title: Container(
           height: 40,
           child: TextField(
+            controller: _searchController,
             decoration: InputDecoration(
               hintText: 'Find',
               prefixIcon: Icon(Icons.search),
               filled: true,
-              fillColor: Colors.grey[200],
+              fillColor: AppColors.whisper,
               contentPadding: EdgeInsets.all(10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
               ),
             ),
+            onTap: () {
+              _searchController.selection = TextSelection.fromPosition(
+                TextPosition(offset: _searchController.text.length),
+              );
+            },
           ),
         ),
       ),
@@ -47,7 +61,7 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
           Positioned(
-            top: kToolbarHeight - 50,
+            top: kToolbarHeight + -50,
             left: 10,
             right: 10,
             child: SingleChildScrollView(
@@ -69,8 +83,9 @@ class _MapScreenState extends State<MapScreen> {
             right: 16.0,
             child: FloatingActionButton(
               onPressed: () {
-                // Add the action later
+                // Add action for adding problem later
               },
+              backgroundColor: AppColors.slateBlue,
               child: Icon(Icons.add),
             ),
           ),
@@ -79,21 +94,22 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  Widget _buildCategoryButton(String text) {
+  Widget _buildCategoryButton(String category) {
+    final isSelected = _selectedCategory == category;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.black, // Text color
-          backgroundColor: Colors.grey[200], // Background color
+          foregroundColor: isSelected ? AppColors.whiteSmoke : Colors.black,
+          backgroundColor: isSelected ? AppColors.slateBlue : AppColors.softSky,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
         ),
         onPressed: () {
-          // Add the action later
+          _selectCategory(category);
         },
-        child: Text(text),
+        child: Text(category),
       ),
     );
   }
