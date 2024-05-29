@@ -5,6 +5,7 @@ const issueRoutes = require('./routes/issues');
 const userRoutes = require('./routes/users');
 const setupSwagger = require('./swagger');
 require('dotenv').config();
+const cors = require('cors');
 
 const app = express();
 const port = 3000;
@@ -33,6 +34,7 @@ db.once('open', function () {
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors());
 
 // Rute
 app.use('/issues', issueRoutes);
