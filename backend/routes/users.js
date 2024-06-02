@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
+const {compare} = require("bcrypt");
 
 /**
  * @swagger
@@ -101,11 +103,18 @@ router.post('/register', async (req, res) => {
  */
 router.post('/login', async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.body.username, password: req.body.password });
+        const user = await User.findOne({ username: req.body.username });
         if (!user) {
             return res.status(404).send({ error: 'Invalid login credentials' });
         }
-        res.send(user);
+
+        const isPasswordMatch = await compare(req.body.password, user.password);
+        if (!isPasswordMatch) {
+            return res.status(404).send({ error: 'Invalid login credentials' });
+        }
+
+        const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
+        res.send({ token });
     } catch (error) {
         res.status(400).send(error);
     }

@@ -9,8 +9,20 @@ const options = {
             version: '1.0.0',
             description: 'API documentation for the Issue Tracker application',
         },
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                },
+            },
+        },
+        security: [{
+            bearerAuth: [],
+        }],
     },
-    apis: ['./routes/*.js'], // Lokacija datotek z anotacijami
+    apis: ['./routes/*.js'], // Adjust the path to your route files
 };
 
 const swaggerSpec = swaggerJSDoc(options);

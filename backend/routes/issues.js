@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Issue = require('../models/issue');
+const auth = require('../common/jwt-auth');
+const authorize = require('../common/role-auth');
 
 /**
  * @swagger
@@ -64,6 +66,16 @@ const Issue = require('../models/issue');
 
 /**
  * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+
+/**
+ * @swagger
  * tags:
  *   name: Issues
  *   description: The issues managing API
@@ -75,12 +87,38 @@ const Issue = require('../models/issue');
  *   post:
  *     summary: Create a new issue
  *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Issue'
+ *             type: object
+ *             required:
+ *               - address
+ *               - description
+ *             properties:
+ *               address:
+ *                 type: string
+ *                 description: The address of the issue
+ *               description:
+ *                 type: string
+ *                 description: The description of the issue
+ *               image:
+ *                 type: string
+ *                 description: The image URL of the issue
+ *               location:
+ *                 type: object
+ *                 properties:
+ *                   type:
+ *                     type: string
+ *                     enum: ['Point']
+ *                   coordinates:
+ *                     type: array
+ *                     items:
+ *                       type: number
+ *                     description: The coordinates of the issue location
  *     responses:
  *       201:
  *         description: The issue was successfully created
@@ -91,9 +129,12 @@ const Issue = require('../models/issue');
  *       400:
  *         description: Bad request
  */
-router.post('/', async (req, res) => {
+router.post('/', auth, authorize(['citizen']), async (req, res) => {
     try {
-        const issue = new Issue(req.body);
+        const issue = new Issue({
+            ...req.body,
+            reportedBy: req.user._id
+        });
         await issue.save();
         res.status(201).send(issue);
     } catch (error) {
@@ -107,6 +148,8 @@ router.post('/', async (req, res) => {
  *   get:
  *     summary: Returns the list of all the issues
  *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: The list of the issues
@@ -119,7 +162,7 @@ router.post('/', async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
     try {
         const issues = await Issue.find();
         res.status(200).send(issues);
@@ -134,6 +177,8 @@ router.get('/', async (req, res) => {
  *   get:
  *     summary: Returns the list of reported issues
  *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: The list of reported issues
@@ -146,7 +191,7 @@ router.get('/', async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get('/reported', async (req, res) => {
+router.get('/reported', auth, async (req, res) => {
     try {
         const reportedIssues = await Issue.find({ status: 'reported' });
         res.status(200).send(reportedIssues);
@@ -161,6 +206,8 @@ router.get('/reported', async (req, res) => {
  *   get:
  *     summary: Get the issue by id
  *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -180,7 +227,7 @@ router.get('/reported', async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
     try {
         const issue = await Issue.findById(req.params.id);
         if (!issue) {
@@ -198,6 +245,8 @@ router.get('/:id', async (req, res) => {
  *   patch:
  *     summary: Update the issue by the id
  *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -225,7 +274,7 @@ router.get('/:id', async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', auth, authorize(['worker']), async (req, res) => {
     try {
         const issue = await Issue.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if (!issue) {
