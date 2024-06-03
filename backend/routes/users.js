@@ -20,6 +20,9 @@ const {compare} = require("bcrypt");
  *         username:
  *           type: string
  *           description: The username of the user
+ *         email:
+ *           type: string
+ *           description: The email of the user
  *         password:
  *           type: string
  *           description: The password of the user
@@ -38,6 +41,7 @@ const {compare} = require("bcrypt");
  *           description: List of issue IDs downvoted by the user
  *       example:
  *         username: "john_doe"
+ *         email: "john_doe@mail.com"
  *         password: "password123"
  *         role: "citizen"
  *         upvotedIssues: ["60b8d295f3f1a2c70563cbbd", "60b8d295f3f1a2c70563cbbe"]
@@ -63,7 +67,22 @@ const {compare} = require("bcrypt");
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             type: object
+ *             required:
+ *               - email
+ *               - username
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: The email of the user
+ *               username:
+ *                 type: string
+ *                 description: The username of the user
+ *               password:
+ *                 type: string
+ *                 description: The password of the user
  *     responses:
  *       201:
  *         description: The user was successfully registered
@@ -76,7 +95,8 @@ const {compare} = require("bcrypt");
  */
 router.post('/register', async (req, res) => {
     try {
-        const user = new User(req.body);
+        const { email, username, password } = req.body;
+        const user = new User({ email, username, password });
         await user.save();
         res.status(201).send(user);
     } catch (error) {

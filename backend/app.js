@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const issueRoutes = require('./routes/issues');
 const userRoutes = require('./routes/users');
+const messageRoutes = require('./routes/messages');
 const setupSwagger = require('./swagger');
 require('dotenv').config();
 const cors = require('cors');
@@ -39,6 +40,7 @@ app.use(cors());
 // Rute
 app.use('/issues', issueRoutes);
 app.use('/users', userRoutes);
+app.use('/messages', messageRoutes);
 
 // Swagger dokumentacija
 setupSwagger(app);

@@ -183,7 +183,7 @@ router.post('/', auth, authorize(['citizen']), async (req, res) => {
  */
 router.get('/', auth, async (req, res) => {
     try {
-        const issues = await Issue.find();
+        const issues = await Issue.find().populate('reportedBy', 'username');
         res.status(200).send(issues);
     } catch (error) {
         res.status(500).send(error);
@@ -212,7 +212,7 @@ router.get('/', auth, async (req, res) => {
  */
 router.get('/reported', auth, async (req, res) => {
     try {
-        const reportedIssues = await Issue.find({ status: 'reported' });
+        const reportedIssues = await Issue.find({ status: 'reported' }).populate('reportedBy', 'username');
         res.status(200).send(reportedIssues);
     } catch (error) {
         res.status(500).send(error);
@@ -248,7 +248,7 @@ router.get('/reported', auth, async (req, res) => {
  */
 router.get('/:id', auth, async (req, res) => {
     try {
-        const issue = await Issue.findById(req.params.id);
+        const issue = await Issue.findById(req.params.id).populate('reportedBy', 'username');
         if (!issue) {
             return res.status(404).send({ error: 'Issue not found' });
         }
@@ -346,11 +346,13 @@ router.patch('/:id/upvote', auth, authorize(['citizen']), async (req, res) => {
 
         if (user.downvotedIssues.includes(issue._id)) {
             user.downvotedIssues.pull(issue._id);
+            issue.downvotedBy.pull(user._id);
             issue.downvotes -= 1;
         }
 
         user.upvotedIssues.push(issue._id);
         issue.upvotes += 1;
+        issue.upvotedBy.push(user._id);
         await user.save();
         await issue.save();
 
@@ -401,11 +403,13 @@ router.patch('/:id/downvote', auth, authorize(['citizen']), async (req, res) => 
 
         if (user.upvotedIssues.includes(issue._id)) {
             user.upvotedIssues.pull(issue._id);
+            issue.upvotedBy.pull(user._id);
             issue.upvotes -= 1;
         }
 
         user.downvotedIssues.push(issue._id);
         issue.downvotes += 1;
+        issue.downvotedBy.push(user._id);
         await user.save();
         await issue.save();
 
