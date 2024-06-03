@@ -14,7 +14,7 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ['citizen', 'worker'],
+        enum: ['citizen', 'worker', 'contact_person'],
         default: 'citizen'
     },
     upvotedIssues: [{
