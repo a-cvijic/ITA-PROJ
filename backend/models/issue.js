@@ -41,7 +41,18 @@ const IssueSchema = new Schema({
             type: [Number],
             required: true
         }
-    }
+    },
+    resolvedDate: {
+        type: Date
+    },
+    upvotedBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    downvotedBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }]
 }, { timestamps: true });
 
 // Ustvari 2dsphere indeks za polje location

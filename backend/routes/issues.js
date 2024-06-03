@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Issue = require('../models/issue');
+const User = require('../models/user');
 const auth = require('../common/jwt-auth');
 const authorize = require('../common/role-auth');
 
@@ -51,6 +52,20 @@ const authorize = require('../common/role-auth');
  *               items:
  *                 type: number
  *               description: The coordinates of the issue location
+ *         resolvedDate:
+ *           type: string
+ *           format: date-time
+ *           description: The date when the issue was resolved
+ *         upvotedBy:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of user IDs who upvoted the issue
+ *         downvotedBy:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of user IDs who downvoted the issue
  *       example:
  *         address: "123 Main St"
  *         description: "There is a large pothole on the road."
@@ -62,7 +77,11 @@ const authorize = require('../common/role-auth');
  *         location:
  *           type: "Point"
  *           coordinates: [-73.856077, 40.848447]
+ *         resolvedDate: "2024-06-02T12:34:56Z"
+ *         upvotedBy: ["60b8d295f3f1a2c70563cbba", "60b8d295f3f1a2c70563cbbb"]
+ *         downvotedBy: ["60b8d295f3f1a2c70563cbbc"]
  */
+
 
 /**
  * @swagger
@@ -283,6 +302,161 @@ router.patch('/:id', auth, authorize(['worker']), async (req, res) => {
         res.send(issue);
     } catch (error) {
         res.status(400).send(error);
+    }
+});
+
+/**
+ * @swagger
+ * /issues/{id}/upvote:
+ *   patch:
+ *     summary: Upvote an issue
+ *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The issue id
+ *     responses:
+ *       200:
+ *         description: The issue was upvoted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Issue'
+ *       404:
+ *         description: The issue was not found
+ *       500:
+ *         description: Internal server error
+ */
+router.patch('/:id/upvote', auth, authorize(['citizen']), async (req, res) => {
+    try {
+        const issue = await Issue.findById(req.params.id);
+        if (!issue) {
+            return res.status(404).send({ error: 'Issue not found' });
+        }
+
+        const user = await User.findById(req.user._id);
+        if (user.upvotedIssues.includes(issue._id)) {
+            return res.status(400).send({ error: 'You have already upvoted this issue' });
+        }
+
+        if (user.downvotedIssues.includes(issue._id)) {
+            user.downvotedIssues.pull(issue._id);
+            issue.downvotes -= 1;
+        }
+
+        user.upvotedIssues.push(issue._id);
+        issue.upvotes += 1;
+        await user.save();
+        await issue.save();
+
+        res.send(issue);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
+/**
+ * @swagger
+ * /issues/{id}/downvote:
+ *   patch:
+ *     summary: Downvote an issue
+ *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The issue id
+ *     responses:
+ *       200:
+ *         description: The issue was downvoted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Issue'
+ *       404:
+ *         description: The issue was not found
+ *       500:
+ *         description: Internal server error
+ */
+router.patch('/:id/downvote', auth, authorize(['citizen']), async (req, res) => {
+    try {
+        const issue = await Issue.findById(req.params.id);
+        if (!issue) {
+            return res.status(404).send({ error: 'Issue not found' });
+        }
+
+        const user = await User.findById(req.user._id);
+        if (user.downvotedIssues.includes(issue._id)) {
+            return res.status(400).send({ error: 'You have already downvoted this issue' });
+        }
+
+        if (user.upvotedIssues.includes(issue._id)) {
+            user.upvotedIssues.pull(issue._id);
+            issue.upvotes -= 1;
+        }
+
+        user.downvotedIssues.push(issue._id);
+        issue.downvotes += 1;
+        await user.save();
+        await issue.save();
+
+        res.send(issue);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+
+
+/**
+ * @swagger
+ * /issues/{id}/resolve:
+ *   patch:
+ *     summary: Resolve an issue
+ *     tags: [Issues]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The issue id
+ *     responses:
+ *       200:
+ *         description: The issue status was updated to resolved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Issue'
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: The issue was not found
+ *       500:
+ *         description: Internal server error
+ */
+router.patch('/:id/resolve', auth, authorize(['worker']), async (req, res) => {
+    try {
+        const issue = await Issue.findById(req.params.id);
+        if (!issue) {
+            return res.status(404).send({ error: 'Issue not found' });
+        }
+        issue.status = 'resolved';
+        issue.resolvedDate = new Date();
+        await issue.save();
+        res.send(issue);
+    } catch (error) {
+        res.status(500).send(error);
     }
 });
 

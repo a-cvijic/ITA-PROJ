@@ -23,10 +23,27 @@ const {compare} = require("bcrypt");
  *         password:
  *           type: string
  *           description: The password of the user
+ *         role:
+ *           type: string
+ *           description: The role of the user
+ *         upvotedIssues:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of issue IDs upvoted by the user
+ *         downvotedIssues:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: List of issue IDs downvoted by the user
  *       example:
  *         username: "john_doe"
  *         password: "password123"
+ *         role: "citizen"
+ *         upvotedIssues: ["60b8d295f3f1a2c70563cbbd", "60b8d295f3f1a2c70563cbbe"]
+ *         downvotedIssues: ["60b8d295f3f1a2c70563cbbf"]
  */
+
 
 /**
  * @swagger

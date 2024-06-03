@@ -16,7 +16,15 @@ const UserSchema = new Schema({
         type: String,
         enum: ['citizen', 'worker'],
         default: 'citizen'
-    }
+    },
+    upvotedIssues: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Issue'
+    }],
+    downvotedIssues: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Issue'
+    }]
 }, { timestamps: true });
 
 UserSchema.pre('save', async function (next) {
@@ -26,6 +34,5 @@ UserSchema.pre('save', async function (next) {
     }
     next();
 });
-
 
 module.exports = mongoose.models.User || mongoose.model('User', UserSchema);
