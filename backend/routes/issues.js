@@ -187,7 +187,7 @@ router.post('/', auth, authorize(['citizen']), async (req, res) => {
 router.get('/', auth, async (req, res) => {
     try {
         const issues = await Issue.find().populate('reportedBy', 'username');
-        res.status(200).send(issues);
+        res.status(200).send(issues.map(issue => { issue.image = 'empyt'}));
     } catch (error) {
         res.status(500).send(error);
     }
@@ -216,7 +216,7 @@ router.get('/', auth, async (req, res) => {
 router.get('/reported', auth, async (req, res) => {
     try {
         const reportedIssues = await Issue.find({ status: 'reported' }).populate('reportedBy', 'username');
-        res.status(200).send(reportedIssues);
+        res.status(200).send(reportedIssues.map(issue => { issue.image = 'empyt'}));
     } catch (error) {
         res.status(500).send(error);
     }
