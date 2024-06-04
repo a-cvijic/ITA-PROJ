@@ -33,10 +33,10 @@ class _AddProblemScreenState extends State<AddProblemScreen> {
       final String base64Image = base64Encode(await _image!.readAsBytes());
 
       final response = await http.post(
-        Uri.parse('http://localhost:3000/issues'),
+        Uri.parse('http://10.0.2.2:3000/issues'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'address': '123 Main St', // Placeholder address
+          'title': '123 Main St', // Placeholder address
           'description': _descriptionController.text,
           'image': base64Image,
           'reportedBy': '60b8d295f3f1a2c70563cbbc', // Placeholder user ID

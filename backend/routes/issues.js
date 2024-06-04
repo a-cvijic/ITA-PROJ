@@ -12,16 +12,16 @@ const authorize = require('../common/role-auth');
  *     Issue:
  *       type: object
  *       required:
- *         - address
+ *         - title
  *         - description
  *         - reportedBy
  *       properties:
  *         id:
  *           type: string
  *           description: The auto-generated id of the issue
- *         address:
+ *         title:
  *           type: string
- *           description: The address of the issue
+ *           description: The title of the issue
  *         description:
  *           type: string
  *           description: The description of the issue
@@ -67,7 +67,7 @@ const authorize = require('../common/role-auth');
  *             type: string
  *           description: List of user IDs who downvoted the issue
  *       example:
- *         address: "123 Main St"
+ *         title: "123 Main St"
  *         description: "There is a large pothole on the road."
  *         image: "http://example.com/image.jpg"
  *         upvotes: 10
@@ -115,12 +115,12 @@ const authorize = require('../common/role-auth');
  *           schema:
  *             type: object
  *             required:
- *               - address
+ *               - title
  *               - description
  *             properties:
- *               address:
+ *               title:
  *                 type: string
- *                 description: The address of the issue
+ *                 description: The title of the issue
  *               description:
  *                 type: string
  *                 description: The description of the issue
@@ -151,7 +151,10 @@ const authorize = require('../common/role-auth');
 router.post('/', auth, authorize(['citizen']), async (req, res) => {
     try {
         const issue = new Issue({
-            ...req.body,
+            title: req.body.title,
+            description: req.body.description,
+            image: req.body.image,
+            location: req.body.location,
             reportedBy: req.user._id
         });
         await issue.save();

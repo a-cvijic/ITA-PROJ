@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/issue_model.dart';
@@ -30,10 +32,12 @@ class _IssueScreenState extends State<IssueScreen> {
         future: futureIssue,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            Uint8List bytes = base64Decode(snapshot.data!.imageUrl);
             return SingleChildScrollView(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.network(snapshot.data!.imageUrl),
+                  Image.memory(bytes),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -45,7 +49,7 @@ class _IssueScreenState extends State<IssueScreen> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'Address: ${snapshot.data!.address}',
+                          'Address: ${snapshot.data!.title}',
                           style: TextStyle(fontSize: 16),
                         ),
                         SizedBox(height: 8),
@@ -55,7 +59,7 @@ class _IssueScreenState extends State<IssueScreen> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'Reported By: ${snapshot.data!.reportedBy}',
+                          'Reported By: ${snapshot.data!.reportedBy.username}',
                           style: TextStyle(fontSize: 16),
                         ),
                         SizedBox(height: 8),
@@ -65,51 +69,53 @@ class _IssueScreenState extends State<IssueScreen> {
                         ),
                         SizedBox(height: 8),
                         Text(
-                          'Updated At: ${snapshot.data!.updatedAt}',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
                           'Coordinates: ${snapshot.data!.coordinates[1]}, ${snapshot.data!.coordinates[0]}',
                           style: TextStyle(fontSize: 16),
+                        ),
+                        SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Column(
+                              children: [
+                                Text(
+                                  'Votes',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  '${snapshot.data!.upvotes - snapshot.data!.downvotes}',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.arrow_upward, color: Colors.blue),
+                                  onPressed: () {
+                                    // Upvote logic
+                                  },
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.arrow_downward, color: Colors.blue),
+                                  onPressed: () {
+                                    // Downvote logic
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  Text(
-                    'Votes',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  Text(
-                    'Upvotes: ${snapshot.data!.upvotes}',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    'Downvotes: ${snapshot.data!.downvotes}',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: Icon(Icons.arrow_upward),
-                        onPressed: () {
-                          // Upvote logic
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.arrow_downward),
-                        onPressed: () {
-                          // Downvote logic
-                        },
-                      ),
-                    ],
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/map');
-                    },
-                    child: Text('Show on map'),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/map');
+                      },
+                      child: Text('Show on map'),
+                    ),
                   ),
                 ],
               ),

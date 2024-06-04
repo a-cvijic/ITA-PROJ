@@ -34,7 +34,7 @@ class HomeScreen extends StatelessWidget {
                 Navigator.pushNamed(
                   context,
                   '/issue',
-                  arguments: '66538a82654f7cbfb73de4d6',
+                  arguments: '665f6eb2f872b76496457cc4',
                 );
               },
               child: Text('Issue'),

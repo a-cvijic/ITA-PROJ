@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:mobile_app/models/issue_model.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:3000/issues';
+  static const String baseUrl = 'http://10.0.2.2:3000/issues';
 
   Future<Issue> fetchIssue(String id) async {
     final response = await http.get(Uri.parse('$baseUrl/$id'));
