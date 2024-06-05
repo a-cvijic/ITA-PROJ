@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
 import '../colors.dart';
+import '../services/api_service.dart';
 
-class SignInScreen extends StatelessWidget {
+class SignInScreen extends StatefulWidget {
+  @override
+  _SignInScreenState createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final ApiService _apiService = ApiService();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,8 +33,9 @@ class SignInScreen extends StatelessWidget {
               ),
               SizedBox(height: 40),
               TextField(
+                controller: _usernameController,
                 decoration: InputDecoration(
-                  hintText: 'Email',
+                  hintText: 'Username',
                   filled: true,
                   fillColor: AppColors.whiteSmoke,
                   border: OutlineInputBorder(
@@ -35,6 +46,7 @@ class SignInScreen extends StatelessWidget {
               ),
               SizedBox(height: 20),
               TextField(
+                controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Password',
@@ -48,9 +60,17 @@ class SignInScreen extends StatelessWidget {
               ),
               SizedBox(height: 40),
               ElevatedButton(
-                onPressed: () {
-                  // Assume login is successful and navigate to Home Screen
-                  Navigator.pushReplacementNamed(context, '/home');
+                onPressed: () async {
+                  try {
+                    await _apiService.signIn(
+                      _usernameController.text,
+                      _passwordController.text,
+                    );
+                    Navigator.pushReplacementNamed(context, '/home');
+                  } catch (e) {
+                    // Handle error
+                    print('Failed to sign in: $e');
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.charcoal,

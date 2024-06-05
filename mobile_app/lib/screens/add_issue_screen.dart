@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddProblemScreen extends StatefulWidget {
   @override
@@ -31,10 +32,15 @@ class _AddProblemScreenState extends State<AddProblemScreen> {
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate() && _image != null) {
       final String base64Image = base64Encode(await _image!.readAsBytes());
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
 
       final response = await http.post(
         Uri.parse('http://10.0.2.2:3000/issues'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
         body: jsonEncode({
           'title': '123 Main St', // Placeholder address
           'description': _descriptionController.text,
@@ -44,9 +50,6 @@ class _AddProblemScreenState extends State<AddProblemScreen> {
             'type': 'Point',
             'coordinates': [-73.856077, 40.848447] // Placeholder coordinates
           },
-          'upvotes': 0,
-          'downvotes': 0,
-          'status': 'reported',
         }),
       );
 
