@@ -4,14 +4,14 @@ import 'package:mobile_app/models/issue_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:3000/issues';
+  static const String baseUrl = 'http://10.0.2.2:3000';
 
   Future<Issue> fetchIssue(String id) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token') ?? '';
 
     final response = await http.get(
-      Uri.parse('$baseUrl/$id'),
+      Uri.parse('$baseUrl/issues/$id'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ class ApiService {
 
   Future<void> signIn(String username, String password) async {
     final response = await http.post(
-      Uri.parse('http://localhost:3000/users/login'),
+      Uri.parse('$baseUrl/users/login'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

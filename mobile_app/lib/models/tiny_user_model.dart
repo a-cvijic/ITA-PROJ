@@ -1,10 +1,10 @@
 class TinyUser {
   final String id;
-  final String username;
+  final String? username;
 
   TinyUser({
     required this.id,
-    required this.username,
+    this.username,
   });
 
   factory TinyUser.fromJson(Map<String, dynamic> json) {

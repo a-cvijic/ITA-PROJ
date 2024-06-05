@@ -1,11 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../colors.dart';
+import '../models/message_model.dart';
+import '../services/messages_api_service.dart';
 
-class MessageScreen extends StatelessWidget {
+class MessageScreen extends StatefulWidget {
+  @override
+  _MessageScreenState createState() => _MessageScreenState();
+}
+
+class _MessageScreenState extends State<MessageScreen> {
+  final TextEditingController _messageController = TextEditingController();
+  final MessageService _messageService = MessageService();
+  late Future<List<Message>> _messagesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _messagesFuture = _messageService.fetchMessages();
+  }
+
+  void _handleSendMessage() async {
+    if (_messageController.text.trim().isEmpty) return;
+    await _messageService.sendMessage(_messageController.text.trim());
+    _messageController.clear();
+    setState(() {
+      _messagesFuture = _messageService.fetchMessages();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final TextEditingController _messageController = TextEditingController();
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Chat with Representative'),
@@ -17,11 +44,28 @@ class MessageScreen extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: ListView(
-                children: [
-                  _buildReceivedMessage('Hello! How can I assist you today?'),
-                  _buildSentMessage('I have a problem with street lights.'),
-                ],
+              child: FutureBuilder<List<Message>>(
+                future: _messagesFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Failed to load messages' + snapshot.error.toString()));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(child: Text('No messages found'));
+                  }
+
+                  final messages = snapshot.data!;
+                  return ListView.builder(
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      return message.from == 'user'
+                          ? _buildSentMessage(message.message)
+                          : _buildReceivedMessage(message.message);
+                    },
+                  );
+                },
               ),
             ),
             Row(
@@ -42,9 +86,7 @@ class MessageScreen extends StatelessWidget {
                 ),
                 SizedBox(width: 10),
                 ElevatedButton(
-                  onPressed: () {
-                    // Add send message logic
-                  },
+                  onPressed: _handleSendMessage,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.charcoal,
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
