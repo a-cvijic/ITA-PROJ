@@ -20,11 +20,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',
+      initialRoute: '/signin',
       routes: {
-        '/': (context) => HomeScreen(),
         '/signin': (context) => SignInScreen(),
         '/signup': (context) => SignUpScreen(),
+        '/home': (context) => HomeScreen(),
         '/map': (context) => MapScreen(),
         '/issue': (context) => IssueScreen(
             issueId: ModalRoute.of(context)!.settings.arguments as String),

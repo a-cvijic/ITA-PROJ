@@ -11,7 +11,6 @@ class AdminMessageScreen extends StatelessWidget {
         'lastMessage': 'Problem with street lights.'
       },
       {'id': '2', 'user': 'User2', 'lastMessage': 'Garbage not collected.'},
-      // Add more messages here
     ];
 
     return Scaffold(
@@ -75,7 +74,6 @@ class AdminChatScreen extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
-                  // For demonstration purposes, static messages
                   _buildReceivedMessage('Hello! How can I assist you today?'),
                   _buildSentMessage('I have a problem with street lights.'),
                 ],

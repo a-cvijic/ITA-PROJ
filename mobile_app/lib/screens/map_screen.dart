@@ -51,6 +51,53 @@ class _MapScreenState extends State<MapScreen> {
           ),
         ),
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: AppColors.charcoal,
+              ),
+              child: Text(
+                'Navigation',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Home Screen'),
+              onTap: () {
+                Navigator.pushNamed(context, '/home');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.add),
+              title: Text('Add Issue'),
+              onTap: () {
+                Navigator.pushNamed(context, '/add_problem');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.message),
+              title: Text('Chat with Representative'),
+              onTap: () {
+                Navigator.pushNamed(context, '/message');
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.admin_panel_settings),
+              title: Text('Manage Messages'),
+              onTap: () {
+                Navigator.pushNamed(context, '/admin_messages');
+              },
+            ),
+          ],
+        ),
+      ),
       body: Stack(
         children: [
           GoogleMap(
@@ -80,10 +127,10 @@ class _MapScreenState extends State<MapScreen> {
           ),
           Positioned(
             bottom: 16.0,
-            right: 16.0,
+            left: 16.0, // Move the floating button to the left
             child: FloatingActionButton(
               onPressed: () {
-                // Add action for adding problem later
+                Navigator.pushNamed(context, '/add_problem');
               },
               backgroundColor: AppColors.slateBlue,
               child: Icon(Icons.add),

@@ -13,18 +13,6 @@ class HomeScreen extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/signin');
-              },
-              child: Text('Sign In'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/signup');
-              },
-              child: Text('Sign Up'),
-            ),
-            ElevatedButton(
-              onPressed: () {
                 Navigator.pushNamed(context, '/map');
               },
               child: Text('Map Screen'),

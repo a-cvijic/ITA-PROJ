@@ -49,7 +49,8 @@ class SignInScreen extends StatelessWidget {
               SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () {
-                  // Add sign in logic
+                  // Assume login is successful and navigate to Home Screen
+                  Navigator.pushReplacementNamed(context, '/home');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.charcoal,
