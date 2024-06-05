@@ -45,6 +45,18 @@ class HomeScreen extends StatelessWidget {
               },
               child: Text('Add Issue'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/message');
+              },
+              child: Text('Chat with Representative'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/admin_messages');
+              },
+              child: Text('Manage Messages'),
+            ),
           ],
         ),
       ),

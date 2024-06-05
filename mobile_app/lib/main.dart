@@ -5,6 +5,8 @@ import 'screens/sign_in_screen.dart';
 import 'screens/sign_up_screen.dart';
 import 'screens/map_screen.dart';
 import 'screens/issue_details_screen.dart';
+import 'screens/message_screen.dart';
+import 'screens/admin_message_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -24,8 +26,11 @@ class MyApp extends StatelessWidget {
         '/signin': (context) => SignInScreen(),
         '/signup': (context) => SignUpScreen(),
         '/map': (context) => MapScreen(),
-        '/issue': (context) => IssueScreen(issueId: ModalRoute.of(context)!.settings.arguments as String),
+        '/issue': (context) => IssueScreen(
+            issueId: ModalRoute.of(context)!.settings.arguments as String),
         '/add_problem': (context) => AddProblemScreen(),
+        '/message': (context) => MessageScreen(),
+        '/admin_messages': (context) => AdminMessageScreen(),
       },
     );
   }
