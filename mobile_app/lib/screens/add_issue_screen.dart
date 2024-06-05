@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_maps_webservice/places.dart';
 import '../colors.dart';
 
 class AddProblemScreen extends StatefulWidget {
@@ -16,10 +17,16 @@ class _AddProblemScreenState extends State<AddProblemScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   File? _image;
   final picker = ImagePicker();
 
-  final LatLng _initialPosition = LatLng(40.848447, -73.856077);
+  final LatLng _initialPosition = LatLng(46.5547, 15.6459); // Maribor, Slovenia
+  LatLng _selectedPosition = LatLng(46.5547, 15.6459); // Maribor, Slovenia
+  GoogleMapController? _mapController;
+
+  final places =
+      GoogleMapsPlaces(apiKey: 'AIzaSyD1TDOxHVQqnPujrrEx7F1tUZBQf-lq_ss');
 
   Future<void> _pickImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
@@ -53,8 +60,8 @@ class _AddProblemScreenState extends State<AddProblemScreen> {
           'location': {
             'type': 'Point',
             'coordinates': [
-              _initialPosition.longitude,
-              _initialPosition.latitude
+              _selectedPosition.longitude,
+              _selectedPosition.latitude
             ]
           },
         }),
@@ -85,6 +92,30 @@ class _AddProblemScreenState extends State<AddProblemScreen> {
     });
   }
 
+  void _onMapCreated(GoogleMapController controller) {
+    _mapController = controller;
+  }
+
+  Future<void> _searchLocation() async {
+    if (_searchController.text.isEmpty) return;
+    final response = await places.searchByText(_searchController.text);
+    if (response.status == 'OK' && response.results.isNotEmpty) {
+      final place = response.results.first;
+      final location =
+          LatLng(place.geometry!.location.lat, place.geometry!.location.lng);
+      _mapController?.animateCamera(CameraUpdate.newLatLng(location));
+      setState(() {
+        _selectedPosition = location;
+      });
+    }
+  }
+
+  void _onMapTap(LatLng position) {
+    setState(() {
+      _selectedPosition = position;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,22 +129,42 @@ class _AddProblemScreenState extends State<AddProblemScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              _buildTitleField(),
-              SizedBox(height: 16),
-              _buildDescriptionField(),
-              SizedBox(height: 16),
-              _buildImagePicker(),
-              SizedBox(height: 16),
-              _buildMap(),
-            ],
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  _buildTitleField(),
+                  SizedBox(height: 16),
+                  _buildDescriptionField(),
+                  SizedBox(height: 16),
+                  _buildImagePicker(),
+                  SizedBox(height: 16),
+                  _buildSearchField(),
+                ],
+              ),
+            ),
           ),
-        ),
+          Expanded(
+            child: GoogleMap(
+              onMapCreated: _onMapCreated,
+              initialCameraPosition: CameraPosition(
+                target: _initialPosition,
+                zoom: 14,
+              ),
+              markers: {
+                Marker(
+                  markerId: MarkerId('problemLocation'),
+                  position: _selectedPosition,
+                ),
+              },
+              onTap: _onMapTap,
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _submitForm,
@@ -189,28 +240,29 @@ class _AddProblemScreenState extends State<AddProblemScreen> {
     );
   }
 
-  Widget _buildMap() {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.slateBlue),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: GoogleMap(
-          initialCameraPosition: CameraPosition(
-            target: _initialPosition,
-            zoom: 14,
-          ),
-          markers: {
-            Marker(
-              markerId: MarkerId('problemLocation'),
-              position: _initialPosition,
+  Widget _buildSearchField() {
+    return Row(
+      children: [
+        Expanded(
+          child: TextField(
+            controller: _searchController,
+            decoration: InputDecoration(
+              hintText: 'Search location',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: AppColors.slateBlue),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
             ),
-          },
+          ),
         ),
-      ),
+        IconButton(
+          icon: Icon(Icons.search, color: AppColors.slateBlue),
+          onPressed: _searchLocation,
+        ),
+      ],
     );
   }
 }
