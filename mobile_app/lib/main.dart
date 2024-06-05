@@ -7,6 +7,7 @@ import 'screens/map_screen.dart';
 import 'screens/issue_details_screen.dart';
 import 'screens/message_screen.dart';
 import 'screens/admin_message_screen.dart';
+import 'screens/profile_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/add_problem': (context) => AddProblemScreen(),
         '/message': (context) => MessageScreen(),
         '/admin_messages': (context) => AdminMessageScreen(),
+        '/profile': (context) => ProfileScreen(),
       },
     );
   }
