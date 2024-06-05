@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../services/api_service.dart';
 import '../models/issue_model.dart';
+import '../colors.dart';
 
 class IssueScreen extends StatefulWidget {
   final String issueId;
@@ -15,6 +17,7 @@ class IssueScreen extends StatefulWidget {
 
 class _IssueScreenState extends State<IssueScreen> {
   late Future<Issue> futureIssue;
+  late LatLng issueLocation;
 
   @override
   void initState() {
@@ -27,17 +30,25 @@ class _IssueScreenState extends State<IssueScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Issue Details'),
+        backgroundColor: AppColors.slateBlue,
       ),
       body: FutureBuilder<Issue>(
         future: futureIssue,
         builder: (context, snapshot) {
-          if (snapshot.hasData) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
             Uint8List bytes = base64Decode(snapshot.data!.imageUrl);
+            issueLocation = LatLng(
+                snapshot.data!.coordinates[1], snapshot.data!.coordinates[0]);
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.memory(bytes),
+                  Image.memory(bytes,
+                      fit: BoxFit.cover, width: double.infinity, height: 200),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -45,85 +56,114 @@ class _IssueScreenState extends State<IssueScreen> {
                       children: [
                         Text(
                           snapshot.data!.description,
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(
+                              fontSize: 16, color: AppColors.charcoal),
                         ),
                         SizedBox(height: 8),
                         Text(
                           'Address: ${snapshot.data!.title}',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(
+                              fontSize: 16, color: AppColors.charcoal),
                         ),
                         SizedBox(height: 8),
                         Text(
                           'Status: ${snapshot.data!.status}',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(
+                              fontSize: 16, color: AppColors.charcoal),
                         ),
                         SizedBox(height: 8),
                         Text(
                           'Reported By: ${snapshot.data!.reportedBy.username}',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(
+                              fontSize: 16, color: AppColors.charcoal),
                         ),
                         SizedBox(height: 8),
                         Text(
                           'Created At: ${snapshot.data!.createdAt}',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(
+                              fontSize: 16, color: AppColors.charcoal),
                         ),
                         SizedBox(height: 8),
                         Text(
                           'Coordinates: ${snapshot.data!.coordinates[1]}, ${snapshot.data!.coordinates[0]}',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(
+                              fontSize: 16, color: AppColors.charcoal),
                         ),
                         SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Column(
-                              children: [
-                                Text(
-                                  'Votes',
-                                  style: TextStyle(fontSize: 16),
+                        Center(
+                          child: Column(
+                            children: [
+                              Text(
+                                'Votes',
+                                style: TextStyle(
+                                    fontSize: 16, color: AppColors.charcoal),
+                              ),
+                              Text(
+                                '${snapshot.data!.upvotes - snapshot.data!.downvotes}',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.charcoal,
                                 ),
-                                Text(
-                                  '${snapshot.data!.upvotes - snapshot.data!.downvotes}',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.arrow_upward,
+                                        color: Colors.blue),
+                                    onPressed: () {
+                                      // Upvote logic
+                                    },
                                   ),
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.arrow_upward, color: Colors.blue),
-                                  onPressed: () {
-                                    // Upvote logic
-                                  },
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.arrow_downward, color: Colors.blue),
-                                  onPressed: () {
-                                    // Downvote logic
-                                  },
-                                ),
-                              ],
+                                  IconButton(
+                                    icon: Icon(Icons.arrow_downward,
+                                        color: Colors.blue),
+                                    onPressed: () {
+                                      // Downvote logic
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/map');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.slateBlue,
                             ),
-                          ],
+                            child: Text('Show on map'),
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Container(
+                          height: 200,
+                          child: GoogleMap(
+                            initialCameraPosition: CameraPosition(
+                              target: issueLocation,
+                              zoom: 14,
+                            ),
+                            markers: {
+                              Marker(
+                                markerId: MarkerId('issueLocation'),
+                                position: issueLocation,
+                              ),
+                            },
+                          ),
                         ),
                       ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/map');
-                      },
-                      child: Text('Show on map'),
                     ),
                   ),
                 ],
               ),
             );
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            return Center(child: CircularProgressIndicator());
+            return Center(child: Text('No data found'));
           }
         },
       ),
