@@ -1,31 +1,32 @@
-
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'sign_in_screen.dart';  // Import your sign-up screen
-
-
+import 'sign_in_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
-  double _opacity = 0.0;
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    _startFadeInAnimation();
-    _navigateToNextScreen();
-  }
 
-  void _startFadeInAnimation() {
-    Timer(Duration(milliseconds: 500), () {
-      setState(() {
-        _opacity = 1.0;
-      });
-    });
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..forward(); // Start the animation immediately
+
+    _animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    );
+
+    _navigateToNextScreen();
   }
 
   void _navigateToNextScreen() {
@@ -38,23 +39,27 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(175, 194, 228, 1.0),
-      body: Stack(
-        children: [
-          Center(
-            child: AnimatedOpacity(
-              opacity: _opacity,
-              duration: Duration(seconds: 2),
-              child: Image.asset(
-                'assets/logo.png',  // Use your logo image
-                width: 200,  // Adjust the width of the logo
-                height: 200,  // Adjust the height of the logo
-              ),
+      backgroundColor: const Color.fromRGBO(175, 194, 228, 1.0),
+      body: Center(
+        child: ScaleTransition( // Added ScaleTransition
+          scale: _animation,
+          child: RotationTransition( // Added RotationTransition
+            turns: _animation,
+            child: Image.asset(
+              'assets/logo.png',
+              width: 200,
+              height: 200,
             ),
           ),
-        ],
+        ),
       ),
     );
   }
