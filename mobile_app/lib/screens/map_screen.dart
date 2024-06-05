@@ -95,6 +95,13 @@ class _MapScreenState extends State<MapScreen> {
                 Navigator.pushNamed(context, '/admin_messages');
               },
             ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: Text('Profile'),
+              onTap: () {
+                Navigator.pushNamed(context, '/profile');
+              },
+            ),
           ],
         ),
       ),
@@ -127,7 +134,7 @@ class _MapScreenState extends State<MapScreen> {
           ),
           Positioned(
             bottom: 16.0,
-            left: 16.0, // Move the floating button to the left
+            left: 16.0,
             child: FloatingActionButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/add_problem');
