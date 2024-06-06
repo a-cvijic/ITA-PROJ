@@ -90,10 +90,10 @@ class _MapScreenState extends State<MapScreen> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.home),
-              title: Text('Home Screen'),
+              leading: Icon(Icons.map),
+              title: Text('Map'),
               onTap: () {
-                Navigator.pushNamed(context, '/home');
+                Navigator.pushReplacementNamed(context, '/map');
               },
             ),
             ListTile(

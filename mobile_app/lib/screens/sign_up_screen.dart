@@ -80,6 +80,7 @@ class SignUpScreen extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   // Add sign up logic
+                  Navigator.pushReplacementNamed(context, '/map');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.charcoal,

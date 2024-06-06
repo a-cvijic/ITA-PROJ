@@ -66,7 +66,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       _usernameController.text,
                       _passwordController.text,
                     );
-                    Navigator.pushReplacementNamed(context, '/home');
+                    Navigator.pushReplacementNamed(context, '/map');
                   } catch (e) {
                     // Handle error
                     print('Failed to sign in: $e');
