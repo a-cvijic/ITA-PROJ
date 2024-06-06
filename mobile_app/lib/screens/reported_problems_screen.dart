@@ -21,12 +21,42 @@ class _ReportedProblemsScreenState extends State<ReportedProblemsScreen> {
   Widget _getStatusIcon(String status) {
     switch (status) {
       case 'in progress':
-        return Icon(Icons.hourglass_empty, color: Colors.orange);
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.hourglass_empty, color: Colors.orange),
+            SizedBox(width: 4),
+            Text(
+              'In Progress',
+              style: TextStyle(color: Colors.orange),
+            ),
+          ],
+        );
       case 'resolved':
-        return Icon(Icons.check_circle, color: Colors.green);
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 4),
+            Text(
+              'Completed',
+              style: TextStyle(color: Colors.green),
+            ),
+          ],
+        );
       case 'reported':
       default:
-        return Icon(Icons.report, color: Colors.red);
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.report, color: Colors.red),
+            SizedBox(width: 4),
+            Text(
+              'Reported',
+              style: TextStyle(color: Colors.red),
+            ),
+          ],
+        );
     }
   }
 
@@ -64,7 +94,10 @@ class _ReportedProblemsScreenState extends State<ReportedProblemsScreen> {
                       ),
                     );
                   },
-                  trailing: _getStatusIcon(issue.status),
+                  trailing: SizedBox(
+                    width: 100,
+                    child: _getStatusIcon(issue.status),
+                  ),
                 );
               },
             );
