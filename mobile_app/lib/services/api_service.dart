@@ -4,7 +4,7 @@ import 'package:mobile_app/models/issue_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:3000';
+  static const String baseUrl = 'http://10.0.2.2:3000';
 
   Future<Issue> fetchIssue(String id) async {
     final prefs = await SharedPreferences.getInstance();
@@ -22,6 +22,26 @@ class ApiService {
       return Issue.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to load issue');
+    }
+  }
+
+  Future<List<Issue>> fetchIssues() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/issues'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Iterable l = jsonDecode(response.body);
+      return List<Issue>.from(l.map((model) => Issue.fromJson(model)));
+    } else {
+      throw Exception('Failed to load issues');
     }
   }
 
