@@ -75,8 +75,7 @@ class _MapScreenState extends State<MapScreen> {
         ),
       ),
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+        child: Column(
           children: <Widget>[
             DrawerHeader(
               decoration: BoxDecoration(
@@ -121,6 +120,14 @@ class _MapScreenState extends State<MapScreen> {
               title: Text('Profile'),
               onTap: () {
                 Navigator.pushNamed(context, '/profile');
+              },
+            ),
+            Spacer(),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Logout'),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, '/signin');
               },
             ),
           ],
