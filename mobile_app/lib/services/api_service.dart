@@ -107,9 +107,32 @@ class ApiService {
       throw Exception('Failed to sign in');
     }
   }
+ Future<void> signUp(String name, String surname, String email, String password) async {
+    final String username = '$name';
+    final response = await http.post(
+      Uri.parse('$baseUrl/users/register'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'email': email,
+        'username': username,
+        'password': password,
+      }),
+    );
 
-  Future<void> signOut() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
+    if (response.statusCode == 201) {
+    } else {
+      throw Exception('Failed to sign up ${response.body}');
+    }
   }
+  
+  Future<void> signOut() async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('token');
+    }
 }
+
+
+
+

@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 import '../colors.dart';
+import '../services/api_service.dart';
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
+  @override
+  _SignUpScreenState createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _surnameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final ApiService _apiService = ApiService();
+  bool _termsAccepted = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,6 +28,7 @@ class SignUpScreen extends StatelessWidget {
               Image.asset('assets/logo.png', height: 120),
               SizedBox(height: 40),
               TextField(
+                controller: _nameController,
                 decoration: InputDecoration(
                   hintText: 'Name',
                   filled: true,
@@ -27,6 +41,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: 20),
               TextField(
+                controller: _surnameController,
                 decoration: InputDecoration(
                   hintText: 'Surname',
                   filled: true,
@@ -39,6 +54,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: 20),
               TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
                   hintText: 'Email',
                   filled: true,
@@ -51,6 +67,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: 20),
               TextField(
+                controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
                   hintText: 'Password',
@@ -66,9 +83,11 @@ class SignUpScreen extends StatelessWidget {
               Row(
                 children: [
                   Checkbox(
-                    value: false,
+                    value: _termsAccepted ,
                     onChanged: (bool? value) {
-                      // Checkbox state to be implemented
+                      setState(() {
+                          _termsAccepted = value ?? false;
+                        });
                     },
                   ),
                   Expanded(
@@ -78,12 +97,22 @@ class SignUpScreen extends StatelessWidget {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  // Add sign up logic
-                  Navigator.pushReplacementNamed(context, '/map');
-                },
+                onPressed: _termsAccepted ? () async {
+                  try {
+                    await _apiService.signUp(
+                      _nameController.text,
+                      _surnameController.text,
+                      _emailController.text,
+                      _passwordController.text,
+                    );
+                    Navigator.pushReplacementNamed(context, '/map');
+                  } catch (e) {
+                    // Handle error
+                    print('Failed to sign up: $e');
+                  }
+                } : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.charcoal,
+                  backgroundColor: _termsAccepted ? AppColors.charcoal : AppColors.charcoal.withOpacity(0.5),
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
