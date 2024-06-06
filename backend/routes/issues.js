@@ -260,11 +260,10 @@ router.get('/:id', auth, async (req, res) => {
     try {
         const issue = await Issue.findById(req.params.id)
             .populate('reportedBy', 'username')
-            .populate('image', 'base64String');
+            .populate('imageId', 'base64String');
         if (!issue) {
             return res.status(404).send({ error: 'Issue not found' });
         }
-        issue.image = issue.image.base64String;
 
         res.status(200).send(issue);
     } catch (error) {
