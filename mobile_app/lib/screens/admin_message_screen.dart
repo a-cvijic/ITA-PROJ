@@ -68,7 +68,6 @@ class _AdminMessageScreenState extends State<AdminMessageScreen> {
   }
 }
 
-
 class AdminChatScreen extends StatefulWidget {
   final String userId;
   final String username;
@@ -83,6 +82,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
   final MessageService _messageService = MessageService();
   final TextEditingController _messageController = TextEditingController();
   late Future<List<Message>> _conversationFuture;
+  String adminId = 'string';
 
   @override
   void initState() {
@@ -94,7 +94,8 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
     if (_messageController.text.trim().isEmpty) return;
 
     try {
-      await _messageService.replyMessage(widget.userId, _messageController.text.trim());
+      await _messageService.replyMessage(
+          widget.userId, _messageController.text.trim());
       setState(() {
         _conversationFuture = _messageService.fetchConversation(widget.userId);
       });
@@ -125,7 +126,9 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
-                    return Center(child: Text('Failed to load conversation' + snapshot.error.toString()));
+                    return Center(
+                        child: Text('Failed to load conversation' +
+                            snapshot.error.toString()));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return Center(child: Text('No messages found'));
                   }
@@ -135,7 +138,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
                       final message = messages[index];
-                      return message.from == widget.userId
+                      return message.from.id == widget.userId
                           ? _buildReceivedMessage(message.message)
                           : _buildSentMessage(message.message);
                     },
