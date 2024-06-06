@@ -10,8 +10,9 @@ const IssueSchema = new Schema({
         type: String,
         required: true
     },
-    image: {
-        type: String
+    imageId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Image'
     },
     upvotes: {
         type: Number,

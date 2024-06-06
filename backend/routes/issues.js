@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Issue = require('../models/issue');
+const Image = require('../models/image');
 const User = require('../models/user');
 const auth = require('../common/jwt-auth');
 const authorize = require('../common/role-auth');
@@ -150,10 +151,15 @@ const authorize = require('../common/role-auth');
  */
 router.post('/', auth, authorize(['citizen']), async (req, res) => {
     try {
+        const image = new Image({
+            base64String: req.body.image
+        });
+        const savedImage = await image.save();
+
         const issue = new Issue({
             title: req.body.title,
             description: req.body.description,
-            image: req.body.image,
+            imageId: savedImage._id,
             location: req.body.location,
             reportedBy: req.user._id
         });
@@ -187,7 +193,7 @@ router.post('/', auth, authorize(['citizen']), async (req, res) => {
 router.get('/', auth, async (req, res) => {
     try {
         const issues = await Issue.find().populate('reportedBy', 'username');
-        res.status(200).send(issues.map(issue => { issue.image = 'empyt'}));
+        res.status(200).send(issues);
     } catch (error) {
         res.status(500).send(error);
     }
@@ -215,8 +221,9 @@ router.get('/', auth, async (req, res) => {
  */
 router.get('/reported', auth, async (req, res) => {
     try {
-        const reportedIssues = await Issue.find({ status: 'reported' }).populate('reportedBy', 'username');
-        res.status(200).send(reportedIssues.map(issue => { issue.image = 'empyt'}));
+        const reportedIssues = await Issue.find({ status: 'reported' })
+            .populate('reportedBy', 'username');
+        res.status(200).send(reportedIssues);
     } catch (error) {
         res.status(500).send(error);
     }
@@ -251,10 +258,14 @@ router.get('/reported', auth, async (req, res) => {
  */
 router.get('/:id', auth, async (req, res) => {
     try {
-        const issue = await Issue.findById(req.params.id).populate('reportedBy', 'username');
+        const issue = await Issue.findById(req.params.id)
+            .populate('reportedBy', 'username')
+            .populate('image', 'base64String');
         if (!issue) {
             return res.status(404).send({ error: 'Issue not found' });
         }
+        issue.image = issue.image.base64String;
+
         res.status(200).send(issue);
     } catch (error) {
         res.status(500).send(error);
