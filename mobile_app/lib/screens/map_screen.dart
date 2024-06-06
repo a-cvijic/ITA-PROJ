@@ -4,6 +4,7 @@ import '../colors.dart';
 import '../services/api_service.dart';
 import '../models/issue_model.dart';
 import 'reported_problems_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MapScreen extends StatefulWidget {
   @override
@@ -17,11 +18,13 @@ class _MapScreenState extends State<MapScreen> {
   String _selectedCategory = 'All';
   List<Issue> _issues = [];
   final ApiService _apiService = ApiService();
+  String userRole = '';
 
   @override
   void initState() {
     super.initState();
     _loadIssues();
+    _getUserRole();
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -38,6 +41,15 @@ class _MapScreenState extends State<MapScreen> {
     } catch (e) {
       print('Failed to load issues: $e');
     }
+  }
+
+  void _getUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? role = prefs.getString('userRole'); // Use the correct key
+    print('Retrieved userRole: $role'); // Debug print
+    setState(() {
+      userRole = role ?? '';
+    });
   }
 
   void _selectCategory(String category) {
@@ -101,20 +113,22 @@ class _MapScreenState extends State<MapScreen> {
                 );
               },
             ),
-            ListTile(
-              leading: Icon(Icons.message),
-              title: Text('Chat with Representative'),
-              onTap: () {
-                Navigator.pushNamed(context, '/message');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.admin_panel_settings),
-              title: Text('Manage Messages'),
-              onTap: () {
-                Navigator.pushNamed(context, '/admin_messages');
-              },
-            ),
+            if (userRole == 'citizen')
+              ListTile(
+                leading: Icon(Icons.message),
+                title: Text('Chat with Representative'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/message');
+                },
+              ),
+            if (userRole == 'contact_person')
+              ListTile(
+                leading: Icon(Icons.admin_panel_settings),
+                title: Text('Manage Messages'),
+                onTap: () {
+                  Navigator.pushNamed(context, '/admin_messages');
+                },
+              ),
             ListTile(
               leading: Icon(Icons.person),
               title: Text('Profile'),

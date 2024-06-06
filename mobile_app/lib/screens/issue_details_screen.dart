@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import '../models/issue_details_model.dart';
 import '../colors.dart';
@@ -19,6 +20,7 @@ class _IssueScreenState extends State<IssueScreen> {
   late Future<IssueDetails> futureIssue;
   late LatLng issueLocation;
   Uint8List? imageBytes;
+  String userRole = '';
 
   @override
   void initState() {
@@ -30,6 +32,17 @@ class _IssueScreenState extends State<IssueScreen> {
       }
     }).catchError((error) {
       print('Failed to load issue: $error');
+    });
+    _getUserRole();
+  }
+
+
+  void _getUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? role = prefs.getString('userRole'); // Use the correct key
+    print('Retrieved userRole: $role'); // Debug print
+    setState(() {
+      userRole = role ?? '';
     });
   }
 
@@ -134,6 +147,7 @@ class _IssueScreenState extends State<IssueScreen> {
                                   color: AppColors.charcoal,
                                 ),
                               ),
+                              if (userRole == 'citizen')
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -170,7 +184,7 @@ class _IssueScreenState extends State<IssueScreen> {
                                 ),
                                 child: Text('Show on map'),
                               ),
-                              if (snapshot.data!.status != 'resolved')
+                              if (snapshot.data!.status != 'resolved' && userRole == 'worker')
                                 ElevatedButton(
                                   onPressed: _updateIssueStatusToResolved,
                                   style: ElevatedButton.styleFrom(
