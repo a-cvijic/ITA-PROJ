@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../colors.dart';
+import 'reported_problems_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   @override
@@ -50,7 +51,12 @@ class ProfileScreen extends StatelessWidget {
               leading: Icon(Icons.report_problem),
               title: Text('My Reported Problems'),
               onTap: () {
-                // Navigate to reported problems
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReportedProblemsScreen(),
+                  ),
+                );
               },
             ),
           ],

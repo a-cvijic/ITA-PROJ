@@ -4,7 +4,7 @@ class Issue {
   final String id;
   final String title;
   final String description;
-  final String imageUrl;
+  final String imageId; // Updated to match backend
   final int upvotes;
   final int downvotes;
   final String status;
@@ -20,7 +20,7 @@ class Issue {
     required this.id,
     required this.title,
     required this.description,
-    required this.imageUrl,
+    required this.imageId, // Updated to match backend
     required this.upvotes,
     required this.downvotes,
     required this.status,
@@ -38,7 +38,7 @@ class Issue {
       id: json['_id'],
       title: json['title'],
       description: json['description'],
-      imageUrl: json['image'],
+      imageId: json['imageId'], // Updated to match backend
       upvotes: json['upvotes'],
       downvotes: json['downvotes'],
       status: json['status'],

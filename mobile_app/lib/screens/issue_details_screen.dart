@@ -18,11 +18,23 @@ class IssueScreen extends StatefulWidget {
 class _IssueScreenState extends State<IssueScreen> {
   late Future<Issue> futureIssue;
   late LatLng issueLocation;
+  Uint8List? imageBytes;
 
   @override
   void initState() {
     super.initState();
     futureIssue = ApiService().fetchIssue(widget.issueId);
+    futureIssue.then((issue) {
+      ApiService().fetchImage(issue.imageId).then((base64String) {
+        setState(() {
+          imageBytes = base64Decode(base64String);
+        });
+      }).catchError((error) {
+        print('Failed to load image: $error');
+      });
+    }).catchError((error) {
+      print('Failed to load issue: $error');
+    });
   }
 
   @override
@@ -40,15 +52,25 @@ class _IssueScreenState extends State<IssueScreen> {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (snapshot.hasData) {
-            Uint8List bytes = base64Decode(snapshot.data!.imageUrl);
             issueLocation = LatLng(
                 snapshot.data!.coordinates[1], snapshot.data!.coordinates[0]);
             return SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Image.memory(bytes,
-                      fit: BoxFit.cover, width: double.infinity, height: 200),
+                  imageBytes != null
+                      ? Image.memory(imageBytes!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: 200)
+                      : Container(
+                          width: double.infinity,
+                          height: 200,
+                          color: Colors.grey,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
