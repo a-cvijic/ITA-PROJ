@@ -18,6 +18,18 @@ class _ReportedProblemsScreenState extends State<ReportedProblemsScreen> {
     futureReportedIssues = ApiService().fetchReportedIssues();
   }
 
+  Widget _getStatusIcon(String status) {
+    switch (status) {
+      case 'in progress':
+        return Icon(Icons.hourglass_empty, color: Colors.orange);
+      case 'resolved':
+        return Icon(Icons.check_circle, color: Colors.green);
+      case 'reported':
+      default:
+        return Icon(Icons.report, color: Colors.red);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,6 +64,7 @@ class _ReportedProblemsScreenState extends State<ReportedProblemsScreen> {
                       ),
                     );
                   },
+                  trailing: _getStatusIcon(issue.status),
                 );
               },
             );
