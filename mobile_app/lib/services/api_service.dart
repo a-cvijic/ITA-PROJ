@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:mobile_app/models/issue_model.dart';
 import 'package:mobile_app/models/issue_details_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class ApiService {
   static const String baseUrl = 'http://localhost:3000';
@@ -101,8 +102,17 @@ class ApiService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final token = data['token'];
+
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      final userRole = decodedToken['role'];
+      final userId = decodedToken['_id'];
+      print('Token: $token');
+      print('User Role: $userRole');
+      print('User ID: $userId');
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
+      await prefs.setString('userRole', userRole);
+      await prefs.setString('userId', userId);
     } else {
       throw Exception('Failed to sign in');
     }
@@ -128,9 +138,43 @@ class ApiService {
   }
   
   Future<void> signOut() async {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('token');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+  }
+
+  Future<void> updateIssueStatusToInProgress(String issueId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    final response = await http.patch(
+      Uri.parse('$baseUrl/issues/$issueId/in_progress'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update issue status to in progress');
     }
+  }
+
+  Future<void> updateIssueStatusToResolved(String issueId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    final response = await http.patch(
+      Uri.parse('$baseUrl/issues/$issueId/resolve'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update issue status to resolved');
+    }
+  }
 }
 
 

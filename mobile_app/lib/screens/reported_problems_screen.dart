@@ -18,6 +18,48 @@ class _ReportedProblemsScreenState extends State<ReportedProblemsScreen> {
     futureReportedIssues = ApiService().fetchReportedIssues();
   }
 
+  Widget _getStatusIcon(String status) {
+    switch (status) {
+      case 'in progress':
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.hourglass_empty, color: Colors.orange),
+            SizedBox(width: 4),
+            Text(
+              'In Progress',
+              style: TextStyle(color: Colors.orange),
+            ),
+          ],
+        );
+      case 'resolved':
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 4),
+            Text(
+              'Completed',
+              style: TextStyle(color: Colors.green),
+            ),
+          ],
+        );
+      case 'reported':
+      default:
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.report, color: Colors.red),
+            SizedBox(width: 4),
+            Text(
+              'Reported',
+              style: TextStyle(color: Colors.red),
+            ),
+          ],
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,6 +94,10 @@ class _ReportedProblemsScreenState extends State<ReportedProblemsScreen> {
                       ),
                     );
                   },
+                  trailing: SizedBox(
+                    width: 100,
+                    child: _getStatusIcon(issue.status),
+                  ),
                 );
               },
             );

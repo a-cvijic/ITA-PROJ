@@ -33,6 +33,18 @@ class _IssueScreenState extends State<IssueScreen> {
     });
   }
 
+  Future<void> _updateIssueStatusToResolved() async {
+    try {
+      await ApiService().updateIssueStatusToResolved(widget.issueId);
+      setState(() {
+        futureIssue = ApiService().fetchIssue(widget.issueId);
+      });
+    } catch (e) {
+      // Handle error
+      print('Failed to update issue status: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,21 +64,19 @@ class _IssueScreenState extends State<IssueScreen> {
                 snapshot.data!.coordinates[1], snapshot.data!.coordinates[0]);
             return SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  imageBytes != null
-                      ? Image.memory(imageBytes!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: 200)
-                      : Container(
-                          width: double.infinity,
-                          height: 200,
-                          color: Colors.grey,
-                          child: Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
+                  if (imageBytes != null)
+                    Image.memory(imageBytes!,
+                        fit: BoxFit.cover, width: double.infinity, height: 200)
+                  else
+                    Container(
+                      width: double.infinity,
+                      height: 200,
+                      color: Colors.grey,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -148,14 +158,27 @@ class _IssueScreenState extends State<IssueScreen> {
                         ),
                         SizedBox(height: 16),
                         Center(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/map');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.slateBlue,
-                            ),
-                            child: Text('Show on map'),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/map');
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.slateBlue,
+                                ),
+                                child: Text('Show on map'),
+                              ),
+                              if (snapshot.data!.status != 'resolved')
+                                ElevatedButton(
+                                  onPressed: _updateIssueStatusToResolved,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.slateBlue,
+                                  ),
+                                  child: Text('Mark as Resolved'),
+                                ),
+                            ],
                           ),
                         ),
                         SizedBox(height: 16),

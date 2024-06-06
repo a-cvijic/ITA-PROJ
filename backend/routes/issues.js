@@ -1,10 +1,10 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Issue = require('../models/issue');
-const Image = require('../models/image');
-const User = require('../models/user');
-const auth = require('../common/jwt-auth');
-const authorize = require('../common/role-auth');
+const Issue = require("../models/issue");
+const Image = require("../models/image");
+const User = require("../models/user");
+const auth = require("../common/jwt-auth");
+const authorize = require("../common/role-auth");
 
 /**
  * @swagger
@@ -83,7 +83,6 @@ const authorize = require('../common/role-auth');
  *         downvotedBy: ["60b8d295f3f1a2c70563cbbc"]
  */
 
-
 /**
  * @swagger
  * components:
@@ -149,25 +148,25 @@ const authorize = require('../common/role-auth');
  *       400:
  *         description: Bad request
  */
-router.post('/', auth, authorize(['citizen']), async (req, res) => {
-    try {
-        const image = new Image({
-            base64String: req.body.image
-        });
-        const savedImage = await image.save();
+router.post("/", auth, authorize(["citizen"]), async (req, res) => {
+  try {
+    const image = new Image({
+      base64String: req.body.image,
+    });
+    const savedImage = await image.save();
 
-        const issue = new Issue({
-            title: req.body.title,
-            description: req.body.description,
-            imageId: savedImage._id,
-            location: req.body.location,
-            reportedBy: req.user._id
-        });
-        await issue.save();
-        res.status(201).send(issue);
-    } catch (error) {
-        res.status(400).send(error);
-    }
+    const issue = new Issue({
+      title: req.body.title,
+      description: req.body.description,
+      imageId: savedImage._id,
+      location: req.body.location,
+      reportedBy: req.user._id,
+    });
+    await issue.save();
+    res.status(201).send(issue);
+  } catch (error) {
+    res.status(400).send(error);
+  }
 });
 
 /**
@@ -190,13 +189,13 @@ router.post('/', auth, authorize(['citizen']), async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get('/', auth, async (req, res) => {
-    try {
-        const issues = await Issue.find().populate('reportedBy', 'username');
-        res.status(200).send(issues);
-    } catch (error) {
-        res.status(500).send(error);
-    }
+router.get("/", auth, async (req, res) => {
+  try {
+    const issues = await Issue.find().populate("reportedBy", "username");
+    res.status(200).send(issues);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 /**
@@ -219,14 +218,16 @@ router.get('/', auth, async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get('/reported', auth, async (req, res) => {
-    try {
-        const reportedIssues = await Issue.find({ status: 'reported' })
-            .populate('reportedBy', 'username');
-        res.status(200).send(reportedIssues);
-    } catch (error) {
-        res.status(500).send(error);
-    }
+router.get("/reported", auth, async (req, res) => {
+  try {
+    const reportedIssues = await Issue.find().populate(
+      "reportedBy",
+      "username"
+    );
+    res.status(200).send(reportedIssues);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 /**
@@ -256,19 +257,19 @@ router.get('/reported', auth, async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.get('/:id', auth, async (req, res) => {
-    try {
-        const issue = await Issue.findById(req.params.id)
-            .populate('reportedBy', 'username')
-            .populate('imageId', 'base64String');
-        if (!issue) {
-            return res.status(404).send({ error: 'Issue not found' });
-        }
-
-        res.status(200).send(issue);
-    } catch (error) {
-        res.status(500).send(error);
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id)
+      .populate("reportedBy", "username")
+      .populate("imageId", "base64String");
+    if (!issue) {
+      return res.status(404).send({ error: "Issue not found" });
     }
+
+    res.status(200).send(issue);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 /**
@@ -306,16 +307,19 @@ router.get('/:id', auth, async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.patch('/:id', auth, authorize(['worker']), async (req, res) => {
-    try {
-        const issue = await Issue.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-        if (!issue) {
-            return res.status(404).send();
-        }
-        res.send(issue);
-    } catch (error) {
-        res.status(400).send(error);
+router.patch("/:id", auth, authorize(["worker"]), async (req, res) => {
+  try {
+    const issue = await Issue.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!issue) {
+      return res.status(404).send();
     }
+    res.send(issue);
+  } catch (error) {
+    res.status(400).send(error);
+  }
 });
 
 /**
@@ -345,34 +349,36 @@ router.patch('/:id', auth, authorize(['worker']), async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.patch('/:id/upvote', auth, authorize(['citizen']), async (req, res) => {
-    try {
-        const issue = await Issue.findById(req.params.id);
-        if (!issue) {
-            return res.status(404).send({ error: 'Issue not found' });
-        }
-
-        const user = await User.findById(req.user._id);
-        if (user.upvotedIssues.includes(issue._id)) {
-            return res.status(400).send({ error: 'You have already upvoted this issue' });
-        }
-
-        if (user.downvotedIssues.includes(issue._id)) {
-            user.downvotedIssues.pull(issue._id);
-            issue.downvotedBy.pull(user._id);
-            issue.downvotes -= 1;
-        }
-
-        user.upvotedIssues.push(issue._id);
-        issue.upvotes += 1;
-        issue.upvotedBy.push(user._id);
-        await user.save();
-        await issue.save();
-
-        res.send(issue);
-    } catch (error) {
-        res.status(500).send(error);
+router.patch("/:id/upvote", auth, authorize(["citizen"]), async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res.status(404).send({ error: "Issue not found" });
     }
+
+    const user = await User.findById(req.user._id);
+    if (user.upvotedIssues.includes(issue._id)) {
+      return res
+        .status(400)
+        .send({ error: "You have already upvoted this issue" });
+    }
+
+    if (user.downvotedIssues.includes(issue._id)) {
+      user.downvotedIssues.pull(issue._id);
+      issue.downvotedBy.pull(user._id);
+      issue.downvotes -= 1;
+    }
+
+    user.upvotedIssues.push(issue._id);
+    issue.upvotes += 1;
+    issue.upvotedBy.push(user._id);
+    await user.save();
+    await issue.save();
+
+    res.send(issue);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 /**
@@ -402,36 +408,42 @@ router.patch('/:id/upvote', auth, authorize(['citizen']), async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.patch('/:id/downvote', auth, authorize(['citizen']), async (req, res) => {
+router.patch(
+  "/:id/downvote",
+  auth,
+  authorize(["citizen"]),
+  async (req, res) => {
     try {
-        const issue = await Issue.findById(req.params.id);
-        if (!issue) {
-            return res.status(404).send({ error: 'Issue not found' });
-        }
+      const issue = await Issue.findById(req.params.id);
+      if (!issue) {
+        return res.status(404).send({ error: "Issue not found" });
+      }
 
-        const user = await User.findById(req.user._id);
-        if (user.downvotedIssues.includes(issue._id)) {
-            return res.status(400).send({ error: 'You have already downvoted this issue' });
-        }
+      const user = await User.findById(req.user._id);
+      if (user.downvotedIssues.includes(issue._id)) {
+        return res
+          .status(400)
+          .send({ error: "You have already downvoted this issue" });
+      }
 
-        if (user.upvotedIssues.includes(issue._id)) {
-            user.upvotedIssues.pull(issue._id);
-            issue.upvotedBy.pull(user._id);
-            issue.upvotes -= 1;
-        }
+      if (user.upvotedIssues.includes(issue._id)) {
+        user.upvotedIssues.pull(issue._id);
+        issue.upvotedBy.pull(user._id);
+        issue.upvotes -= 1;
+      }
 
-        user.downvotedIssues.push(issue._id);
-        issue.downvotes += 1;
-        issue.downvotedBy.push(user._id);
-        await user.save();
-        await issue.save();
+      user.downvotedIssues.push(issue._id);
+      issue.downvotes += 1;
+      issue.downvotedBy.push(user._id);
+      await user.save();
+      await issue.save();
 
-        res.send(issue);
+      res.send(issue);
     } catch (error) {
-        res.status(500).send(error);
+      res.status(500).send(error);
     }
-});
-
+  }
+);
 
 /**
  * @swagger
@@ -462,19 +474,19 @@ router.patch('/:id/downvote', auth, authorize(['citizen']), async (req, res) => 
  *       500:
  *         description: Internal server error
  */
-router.patch('/:id/resolve', auth, authorize(['worker']), async (req, res) => {
-    try {
-        const issue = await Issue.findById(req.params.id);
-        if (!issue) {
-            return res.status(404).send({ error: 'Issue not found' });
-        }
-        issue.status = 'resolved';
-        issue.resolvedDate = new Date();
-        await issue.save();
-        res.send(issue);
-    } catch (error) {
-        res.status(500).send(error);
+router.patch("/:id/resolve", auth, authorize(["worker"]), async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res.status(404).send({ error: "Issue not found" });
     }
+    issue.status = "resolved";
+    issue.resolvedDate = new Date();
+    await issue.save();
+    res.send(issue);
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 module.exports = router;
