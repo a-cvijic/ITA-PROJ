@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../services/api_service.dart';
-import '../models/issue_model.dart';
+import '../models/issue_details_model.dart';
 import '../colors.dart';
 
 class IssueScreen extends StatefulWidget {
@@ -16,7 +16,7 @@ class IssueScreen extends StatefulWidget {
 }
 
 class _IssueScreenState extends State<IssueScreen> {
-  late Future<Issue> futureIssue;
+  late Future<IssueDetails> futureIssue;
   late LatLng issueLocation;
   Uint8List? imageBytes;
 
@@ -25,13 +25,9 @@ class _IssueScreenState extends State<IssueScreen> {
     super.initState();
     futureIssue = ApiService().fetchIssue(widget.issueId);
     futureIssue.then((issue) {
-      ApiService().fetchImage(issue.imageId).then((base64String) {
-        setState(() {
-          imageBytes = base64Decode(base64String);
-        });
-      }).catchError((error) {
-        print('Failed to load image: $error');
-      });
+      if (issue.imageId != null) {
+        imageBytes = base64Decode(issue.imageId!);
+      }
     }).catchError((error) {
       print('Failed to load issue: $error');
     });
@@ -44,7 +40,7 @@ class _IssueScreenState extends State<IssueScreen> {
         title: Text('Issue Details'),
         backgroundColor: AppColors.slateBlue,
       ),
-      body: FutureBuilder<Issue>(
+      body: FutureBuilder<IssueDetails>(
         future: futureIssue,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
