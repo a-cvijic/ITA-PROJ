@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../colors.dart';
+import '../services/api_service.dart';
+import '../models/issue_model.dart';
 
 class MapScreen extends StatefulWidget {
   @override
@@ -12,9 +14,29 @@ class _MapScreenState extends State<MapScreen> {
   final LatLng _center = const LatLng(46.5547, 15.6459);
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'All';
+  List<Issue> _issues = [];
+  final ApiService _apiService = ApiService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadIssues();
+  }
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+  }
+
+  void _loadIssues() async {
+    try {
+      List<Issue> issues = await _apiService.fetchIssues();
+      setState(() {
+        _issues = issues;
+      });
+      print('Issues loaded: ${_issues.length}');
+    } catch (e) {
+      print('Failed to load issues: $e');
+    }
   }
 
   void _selectCategory(String category) {
@@ -113,9 +135,10 @@ class _MapScreenState extends State<MapScreen> {
               target: _center,
               zoom: 14.0,
             ),
+            markers: _buildMarkers(),
           ),
           Positioned(
-            top: kToolbarHeight + -50,
+            top: kToolbarHeight - 50,
             left: 10,
             right: 10,
             child: SingleChildScrollView(
@@ -146,6 +169,20 @@ class _MapScreenState extends State<MapScreen> {
         ],
       ),
     );
+  }
+
+  Set<Marker> _buildMarkers() {
+    return _issues.map((issue) {
+      print('Adding marker for issue: ${issue.title} at ${issue.coordinates}');
+      return Marker(
+        markerId: MarkerId(issue.id),
+        position: LatLng(issue.coordinates[1], issue.coordinates[0]),
+        infoWindow: InfoWindow(
+          title: issue.title,
+          snippet: issue.description,
+        ),
+      );
+    }).toSet();
   }
 
   Widget _buildCategoryButton(String category) {
