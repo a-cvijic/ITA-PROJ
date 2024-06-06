@@ -5,7 +5,7 @@ import 'package:mobile_app/models/message_model.dart';
 import 'package:mobile_app/models/tiny_user_model.dart';
 
 class MessageService {
-  static const String baseUrl = 'http://10.0.2.2:3000/messages';
+  static const String baseUrl = 'http://localhost:3000/messages';
 
   Future<void> sendMessage(String message) async {
     final prefs = await SharedPreferences.getInstance();

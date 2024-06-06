@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../colors.dart';
 import '../services/api_service.dart';
 import '../models/issue_model.dart';
+import 'reported_problems_screen.dart';
 
 class MapScreen extends StatefulWidget {
   @override
@@ -81,26 +82,24 @@ class _MapScreenState extends State<MapScreen> {
               decoration: BoxDecoration(
                 color: AppColors.charcoal,
               ),
-              child: Text(
-                'Navigation',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
+              child: Center(
+                child: Image.asset(
+                  'assets/logo.png',
+                  width: 130,
+                  height: 130,
                 ),
               ),
             ),
             ListTile(
-              leading: Icon(Icons.map),
-              title: Text('Map'),
+              leading: Icon(Icons.report_problem),
+              title: Text('Reported Problems'),
               onTap: () {
-                Navigator.pushReplacementNamed(context, '/map');
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.add),
-              title: Text('Add Issue'),
-              onTap: () {
-                Navigator.pushNamed(context, '/add_problem');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReportedProblemsScreen(),
+                  ),
+                );
               },
             ),
             ListTile(

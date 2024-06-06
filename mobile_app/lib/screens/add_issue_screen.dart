@@ -47,7 +47,7 @@ class _AddProblemScreenState extends State<AddProblemScreen> {
       final token = prefs.getString('token') ?? '';
 
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:3000/issues'),
+        Uri.parse('http://localhost:3000/issues'),
         headers: {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
