@@ -21,6 +21,9 @@ class _IssueScreenState extends State<IssueScreen> {
   late LatLng issueLocation;
   Uint8List? imageBytes;
   String userRole = '';
+  bool isUpvoted = false;
+  bool isDownvoted = false;
+  String userId = ''; // This will be set based on the actual user ID
 
   @override
   void initState() {
@@ -30,12 +33,18 @@ class _IssueScreenState extends State<IssueScreen> {
       if (issue.imageId != null) {
         imageBytes = base64Decode(issue.imageId!);
       }
+      // Check if the user has already voted
+      SharedPreferences.getInstance().then((prefs) {
+        userId = prefs.getString('userId') ?? '';
+        isUpvoted = issue.upvotedBy.contains(userId);
+        isDownvoted = issue.downvotedBy.contains(userId);
+        setState(() {});
+      });
     }).catchError((error) {
       print('Failed to load issue: $error');
     });
     _getUserRole();
   }
-
 
   void _getUserRole() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -55,6 +64,34 @@ class _IssueScreenState extends State<IssueScreen> {
     } catch (e) {
       // Handle error
       print('Failed to update issue status: $e');
+    }
+  }
+
+  Future<void> _handleUpvote() async {
+    if (isUpvoted) return; // Prevent multiple upvotes
+    try {
+      await ApiService().upvoteIssue(widget.issueId, userId);
+      setState(() {
+        futureIssue = ApiService().fetchIssue(widget.issueId);
+        isUpvoted = true;
+        isDownvoted = false;
+      });
+    } catch (e) {
+      print('Failed to upvote issue: $e');
+    }
+  }
+
+  Future<void> _handleDownvote() async {
+    if (isDownvoted) return; // Prevent multiple downvotes
+    try {
+      await ApiService().downvoteIssue(widget.issueId, userId);
+      setState(() {
+        futureIssue = ApiService().fetchIssue(widget.issueId);
+        isUpvoted = false;
+        isDownvoted = true;
+      });
+    } catch (e) {
+      print('Failed to downvote issue: $e');
     }
   }
 
@@ -148,25 +185,25 @@ class _IssueScreenState extends State<IssueScreen> {
                                 ),
                               ),
                               if (userRole == 'citizen')
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  IconButton(
-                                    icon: Icon(Icons.arrow_upward,
-                                        color: Colors.blue),
-                                    onPressed: () {
-                                      // Upvote logic
-                                    },
-                                  ),
-                                  IconButton(
-                                    icon: Icon(Icons.arrow_downward,
-                                        color: Colors.blue),
-                                    onPressed: () {
-                                      // Downvote logic
-                                    },
-                                  ),
-                                ],
-                              ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(Icons.arrow_upward,
+                                          color: isUpvoted
+                                              ? Colors.green
+                                              : Colors.blue),
+                                      onPressed: _handleUpvote,
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.arrow_downward,
+                                          color: isDownvoted
+                                              ? Colors.red
+                                              : Colors.blue),
+                                      onPressed: _handleDownvote,
+                                    ),
+                                  ],
+                                ),
                             ],
                           ),
                         ),
@@ -184,7 +221,8 @@ class _IssueScreenState extends State<IssueScreen> {
                                 ),
                                 child: Text('Show on map'),
                               ),
-                              if (snapshot.data!.status != 'resolved' && userRole == 'worker')
+                              if (snapshot.data!.status != 'resolved' &&
+                                  userRole == 'worker')
                                 ElevatedButton(
                                   onPressed: _updateIssueStatusToResolved,
                                   style: ElevatedButton.styleFrom(

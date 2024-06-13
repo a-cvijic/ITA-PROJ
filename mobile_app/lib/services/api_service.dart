@@ -117,7 +117,9 @@ class ApiService {
       throw Exception('Failed to sign in');
     }
   }
- Future<void> signUp(String name, String surname, String email, String password) async {
+
+  Future<void> signUp(
+      String name, String surname, String email, String password) async {
     final String username = '$name';
     final response = await http.post(
       Uri.parse('$baseUrl/users/register'),
@@ -136,7 +138,7 @@ class ApiService {
       throw Exception('Failed to sign up ${response.body}');
     }
   }
-  
+
   Future<void> signOut() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('token');
@@ -175,8 +177,41 @@ class ApiService {
       throw Exception('Failed to update issue status to resolved');
     }
   }
+
+  // Upvote and Downvote Issue
+  Future<void> upvoteIssue(String issueId, String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    final response = await http.patch(
+      Uri.parse('$baseUrl/issues/$issueId/upvote'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+          'Failed to upvote the issue: ${jsonDecode(response.body)['error']}');
+    }
+  }
+
+  Future<void> downvoteIssue(String issueId, String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+
+    final response = await http.patch(
+      Uri.parse('$baseUrl/issues/$issueId/downvote'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception(
+          'Failed to downvote the issue: ${jsonDecode(response.body)['error']}');
+    }
+  }
 }
-
-
-
-

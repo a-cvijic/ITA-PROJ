@@ -489,4 +489,85 @@ router.patch("/:id/resolve", auth, authorize(["worker"]), async (req, res) => {
   }
 });
 
+// Upvote an issue
+router.patch("/:id/upvote", auth, authorize(["citizen"]), async (req, res) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res.status(404).send({ error: "Issue not found" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
+    }
+
+    // Check if user has already upvoted
+    if (issue.upvotedBy.includes(user._id)) {
+      return res
+        .status(400)
+        .send({ error: "You have already upvoted this issue" });
+    }
+
+    // Remove from downvotedBy if exists
+    if (issue.downvotedBy.includes(user._id)) {
+      issue.downvotedBy.pull(user._id);
+      issue.downvotes -= 1;
+    }
+
+    // Add to upvotedBy
+    issue.upvotedBy.push(user._id);
+    issue.upvotes += 1;
+
+    await issue.save();
+
+    res.status(200).send(issue);
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
+// Downvote an issue
+router.patch(
+  "/:id/downvote",
+  auth,
+  authorize(["citizen"]),
+  async (req, res) => {
+    try {
+      const issue = await Issue.findById(req.params.id);
+      if (!issue) {
+        return res.status(404).send({ error: "Issue not found" });
+      }
+
+      const user = await User.findById(req.user._id);
+      if (!user) {
+        return res.status(404).send({ error: "User not found" });
+      }
+
+      // Check if user has already downvoted
+      if (issue.downvotedBy.includes(user._id)) {
+        return res
+          .status(400)
+          .send({ error: "You have already downvoted this issue" });
+      }
+
+      // Remove from upvotedBy if exists
+      if (issue.upvotedBy.includes(user._id)) {
+        issue.upvotedBy.pull(user._id);
+        issue.upvotes -= 1;
+      }
+
+      // Add to downvotedBy
+      issue.downvotedBy.push(user._id);
+      issue.downvotes += 1;
+
+      await issue.save();
+
+      res.status(200).send(issue);
+    } catch (error) {
+      res.status(500).send({ error: error.message });
+    }
+  }
+);
+
 module.exports = router;
